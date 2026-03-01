@@ -218,7 +218,7 @@ if __name__ == "__main__":
     )).astype({col:"str" for col in ['date_of_journey','dep_time','arrival_time']})
 
 
-    if st.button('Predict Flight Price',use_container_width=True):
+    if st.button('Predict Flight Price',use_container_width=True,type="primary"):
         with st.spinner('Accessing AWS Model...'):
             preprocessor = load_preprocessor()
             pred_df_pre = preprocessor.transform(pred_df)
