@@ -178,21 +178,32 @@ if __name__ == "__main__":
     save_preprocessor(train_df)
 
     st.set_page_config(
-        page_title='Flight Price predictor',
+        page_title='Flight Price Predictor',
+        page_icon='✈️',
         layout='wide'
-    )
+    )   
 
-    st.title('Flight Price Predictor Using AWS')
+    st.title('✈️ Flight Price Predictor (AWS Integrated)')
+    st.markdown("---")
 
-    airline = st.selectbox("Airline:",options=train_df.airline.unique())
-    doj = st.date_input("Date of Journey:")
-    source = st.selectbox("Source", options=train_df.source.unique())
-    destination = st.selectbox("Destination", options=train_df.destination.unique())
-    dep_time = st.time_input("Departure Time:")
-    arr_time = st.time_input("Arrival Time:")
-    duration = st.number_input("Duration", step=1)
-    total_stops = st.number_input("Total Stops:", step=1, min_value=0)
-    additional_info = st.selectbox("Additional_Info:", options=train_df.additional_info.unique())
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown("### 📍 Route")
+        airline = st.selectbox("Airline:",options=train_df.airline.unique())
+        source = st.selectbox("Source", options=train_df.source.unique())
+        destination = st.selectbox("Destination", options=train_df.destination.unique())
+
+    with col2:
+        st.markdown("### 📅 Schedule")
+        doj = st.date_input("Date of Journey:")
+        dep_time = st.time_input("Departure Time:")
+        arr_time = st.time_input("Arrival Time:")
+
+    with col3:
+        st.markdown("### 🛠️ Logistics")
+        duration = st.number_input("Duration", step=1)
+        total_stops = st.number_input("Total Stops:", step=1, min_value=0)
+        additional_info = st.selectbox("Additional_Info:", options=train_df.additional_info.unique())
 
     pred_df = pd.DataFrame(dict(
         airline = [airline],
@@ -207,12 +218,14 @@ if __name__ == "__main__":
     )).astype({col:"str" for col in ['date_of_journey','dep_time','arrival_time']})
 
 
-    if st.button('Predict'):
-        preprocessor = load_preprocessor()
-        pred_df_pre = preprocessor.transform(pred_df)
+    if st.button('Predict Flight Price',use_container_width=True):
+        with st.spinner('Accessing AWS Model...'):
+            preprocessor = load_preprocessor()
+            pred_df_pre = preprocessor.transform(pred_df)
 
-        model = load_model()
-        pred_df_pre_xgb = xgb.DMatrix(pred_df_pre)
-        price = model.predict(pred_df_pre_xgb)[0]
+            model = load_model()
+            pred_df_pre_xgb = xgb.DMatrix(pred_df_pre)
+            price = model.predict(pred_df_pre_xgb)[0]
 
-        st.info(f"The price of the flight will be {price:,.0f} INR.")
+            #st.metric(label="Estimated Flight Fare", value=f"₹ {price:,.0f} INR")
+            st.success(f"### ✈️ Estimated Price: **₹ {price:,.0f} INR**")
